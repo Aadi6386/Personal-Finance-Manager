@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}Goals | Personal Finance Manager{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <div>
+        <h1>Savings Goals</h1>
+
+        <p class="page-subtitle">
+            Set financial goals and track your progress.
+        </p>
+    </div>
+
+    <a
+        href="{{ url_for('add_goal_page') }}"
+        class="button primary"
+    >
+        + Add Goal
+    </a>
+
+</div>
+
+
+<section class="section">
+
+    <div class="section-header">
+
+        <div>
+            <h2>Your Goals</h2>
+
+            <p class="section-subtitle">
+                Track your progress toward each financial target.
+            </p>
+        </div>
+
+    </div>
+
+
+    {% if goal_data %}
+
+        <div class="budget-grid">
+
+            {% for goal in goal_data %}
+
+                <div class="budget-card">
+
+                    <div class="budget-card-header">
+
+                        <div>
+
+                            <h3>
+                                {{ goal.name }}
+                            </h3>
+
+                            {% if goal.deadline %}
+
+                                <p class="budget-label">
+                                    Deadline: {{ goal.deadline }}
+                                </p>
+
+                            {% else %}
+
+                                <p class="budget-label">
+                                    No deadline set
+                                </p>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="budget-actions">
+
+                            <a
+                                href="{{ url_for(
+                                    'edit_goal_page',
+                                    goal_id=goal.id
+                                ) }}"
+                                class="button small secondary"
+                            >
+                                Edit
+                            </a>
+
+                            <form
+                                method="POST"
+                                action="{{ url_for(
+                                    'delete_goal_page',
+                                    goal_id=goal.id
+                                ) }}"
+                                class="delete-form"
+                            >
+
+                                <button
+                                    type="submit"
+                                    class="button small danger"
+                                >
+                                    Delete
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+
+                    {% if goal.description %}
+
+                        <p class="budget-label">
+                            {{ goal.description }}
+                        </p>
+
+                    {% endif %}
+
+
+                    <div class="budget-amounts">
+
+                        <div>
+
+                            <span class="budget-label">
+                                Target
+                            </span>
+
+                            <strong>
+                                ₹{{ "%.2f"|format(goal.target_amount) }}
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span class="budget-label">
+                                Saved
+                            </span>
+
+                            <strong class="positive">
+                                ₹{{ "%.2f"|format(goal.saved_amount) }}
+                            </strong>
+
+                        </div>
+
+
+                        <div>
+
+                            <span class="budget-label">
+                                Remaining
+                            </span>
+
+                            <strong
+                                class="
+                                {% if goal.remaining <= 0 %}
+                                    positive
+                                {% else %}
+                                    negative
+                                {% endif %}
+                                "
+                            >
+                                ₹{{ "%.2f"|format(
+                                    [goal.remaining, 0]|max
+                                ) }}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="progress-section">
+
+                        <div class="progress-header">
+
+                            <span>
+                                {{ "%.1f"|format(goal.percentage) }}% complete
+                            </span>
+
+                            {% if goal.percentage >= 100 %}
+
+                                <span class="positive">
+                                    Goal achieved
+                                </span>
+
+                            {% elif goal.percentage >= 75 %}
+
+                                <span>
+                                    Almost there
+                                </span>
+
+                            {% else %}
+
+                                <span>
+                                    In progress
+                                </span>
+
+                            {% endif %}
+
+                        </div>
+
+
+                        <div class="progress-bar">
+
+                            <div
+                                class="progress-fill"
+                                style="width: {{ goal.percentage }}%;"
+                            ></div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                ₹
+            </div>
+
+            <h3>
+                No savings goals yet
+            </h3>
+
+            <p>
+                Create your first financial goal and start tracking
+                your progress.
+            </p>
+
+            <a
+                href="{{ url_for('add_goal_page') }}"
+                class="button primary"
+            >
+                Create Your First Goal
+            </a>
+
+        </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}
