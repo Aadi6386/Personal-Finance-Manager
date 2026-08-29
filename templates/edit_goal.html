@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Goal | Personal Finance Manager{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <div>
+        <h1>Edit Savings Goal</h1>
+
+        <p class="page-subtitle">
+            Update your goal details and savings progress.
+        </p>
+    </div>
+
+    <a
+        href="{{ url_for('goals') }}"
+        class="button secondary"
+    >
+        ← Back to Goals
+    </a>
+
+</div>
+
+
+<section class="form-card">
+
+    <form
+        method="POST"
+        action="{{ url_for(
+            'edit_goal_page',
+            goal_id=goal.id
+        ) }}"
+    >
+
+        <div class="form-grid">
+
+            <!-- Goal Name -->
+
+            <div class="form-group">
+
+                <label for="name">
+                    Goal Name <span class="required">*</span>
+                </label>
+
+                <input
+                    type="text"
+                    name="name"
+                    id="name"
+                    value="{{ goal.name }}"
+                    placeholder="e.g. Emergency Fund, New Laptop"
+                    required
+                >
+
+            </div>
+
+
+            <!-- Target Amount -->
+
+            <div class="form-group">
+
+                <label for="target_amount">
+                    Target Amount <span class="required">*</span>
+                </label>
+
+                <input
+                    type="number"
+                    name="target_amount"
+                    id="target_amount"
+                    value="{{ goal.target_amount }}"
+                    min="0.01"
+                    step="0.01"
+                    required
+                >
+
+            </div>
+
+
+            <!-- Saved Amount -->
+
+            <div class="form-group">
+
+                <label for="saved_amount">
+                    Amount Already Saved
+                </label>
+
+                <input
+                    type="number"
+                    name="saved_amount"
+                    id="saved_amount"
+                    value="{{ goal.saved_amount }}"
+                    min="0"
+                    step="0.01"
+                >
+
+            </div>
+
+
+            <!-- Deadline -->
+
+            <div class="form-group">
+
+                <label for="deadline">
+                    Deadline
+                </label>
+
+                <input
+                    type="date"
+                    name="deadline"
+                    id="deadline"
+                    value="{{ goal.deadline or '' }}"
+                >
+
+            </div>
+
+
+            <!-- Description -->
+
+            <div class="form-group full-width">
+
+                <label for="description">
+                    Description
+                </label>
+
+                <textarea
+                    name="description"
+                    id="description"
+                    rows="4"
+                    placeholder="Add details about your goal..."
+                >{{ goal.description or "" }}</textarea>
+
+            </div>
+
+        </div>
+
+
+        <!-- Form Actions -->
+
+        <div class="form-actions">
+
+            <a
+                href="{{ url_for('goals') }}"
+                class="button secondary"
+            >
+                Cancel
+            </a>
+
+            <button
+                type="submit"
+                class="button primary"
+            >
+                Update Goal
+            </button>
+
+        </div>
+
+    </form>
+
+</section>
+
+{% endblock %}
