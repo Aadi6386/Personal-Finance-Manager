@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Transaction | Personal Finance Manager{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <div>
+        <h1>Edit Transaction</h1>
+        <p class="page-subtitle">
+            Update the details of this transaction.
+        </p>
+    </div>
+
+    <a
+        href="{{ url_for('transactions') }}"
+        class="button secondary"
+    >
+        ← Back to Transactions
+    </a>
+
+</div>
+
+
+<section class="form-card">
+
+    <form
+        method="POST"
+        action="{{ url_for(
+            'edit_transaction_page',
+            transaction_id=transaction.id
+        ) }}"
+    >
+
+        <div class="form-grid">
+
+            <!-- Transaction Type -->
+
+            <div class="form-group">
+
+                <label for="type">
+                    Transaction Type <span class="required">*</span>
+                </label>
+
+                <select
+                    name="type"
+                    id="type"
+                    required
+                >
+
+                    <option
+                        value="income"
+                        {% if transaction.type == "income" %}selected{% endif %}
+                    >
+                        Income
+                    </option>
+
+                    <option
+                        value="expense"
+                        {% if transaction.type == "expense" %}selected{% endif %}
+                    >
+                        Expense
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <!-- Amount -->
+
+            <div class="form-group">
+
+                <label for="amount">
+                    Amount <span class="required">*</span>
+                </label>
+
+                <input
+                    type="number"
+                    name="amount"
+                    id="amount"
+                    value="{{ transaction.amount }}"
+                    min="0.01"
+                    step="0.01"
+                    required
+                >
+
+            </div>
+
+
+            <!-- Category -->
+
+            <div class="form-group">
+
+                <label for="category">
+                    Category <span class="required">*</span>
+                </label>
+
+                <input
+                    type="text"
+                    name="category"
+                    id="category"
+                    value="{{ transaction.category }}"
+                    placeholder="e.g. Food, Salary, Transport"
+                    required
+                >
+
+            </div>
+
+
+            <!-- Date -->
+
+            <div class="form-group">
+
+                <label for="date">
+                    Date <span class="required">*</span>
+                </label>
+
+                <input
+                    type="date"
+                    name="date"
+                    id="date"
+                    value="{{ transaction.date }}"
+                    required
+                >
+
+            </div>
+
+
+            <!-- Description -->
+
+            <div class="form-group full-width">
+
+                <label for="description">
+                    Description
+                </label>
+
+                <textarea
+                    name="description"
+                    id="description"
+                    rows="4"
+                    placeholder="Add a short description..."
+                >{{ transaction.description or "" }}</textarea>
+
+            </div>
+
+        </div>
+
+
+        <!-- Form Actions -->
+
+        <div class="form-actions">
+
+            <a
+                href="{{ url_for('transactions') }}"
+                class="button secondary"
+            >
+                Cancel
+            </a>
+
+            <button
+                type="submit"
+                class="button primary"
+            >
+                Update Transaction
+            </button>
+
+        </div>
+
+    </form>
+
+</section>
+
+{% endblock %}
