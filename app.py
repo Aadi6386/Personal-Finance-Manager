@@ -1,25 +1,44 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    flash
+)
+
 from datetime import date
 
 from database import (
     initialize_database,
+
     add_transaction,
     get_all_transactions,
     get_transaction,
     update_transaction,
     delete_transaction,
     get_financial_summary,
+
     add_budget,
     get_all_budgets,
     get_budget,
     update_budget,
     delete_budget,
     get_budget_data,
-    get_monthly_analytics
+
+    get_monthly_analytics,
+
+    add_goal,
+    get_all_goals,
+    get_goal,
+    update_goal,
+    delete_goal,
+    get_goal_data
 )
 
 
 app = Flask(__name__)
+
 app.secret_key = "personal-finance-manager-secret-key"
 
 
@@ -34,12 +53,13 @@ initialize_database()
 def index():
 
     summary = get_financial_summary()
-    transactions = get_all_transactions()
+
+    recent_transactions = get_all_transactions()[:5]
 
     return render_template(
         "index.html",
         summary=summary,
-        transactions=transactions
+        recent_transactions=recent_transactions
     )
 
 
@@ -86,29 +106,52 @@ def add_transaction_page():
         description = request.form.get("description")
         transaction_date = request.form.get("date")
 
-        if not transaction_type or not amount or not category or not transaction_date:
-            flash("Please fill in all required fields.", "error")
-            return redirect(url_for("add_transaction_page"))
-
         try:
             amount = float(amount)
-
-            if amount <= 0:
-                raise ValueError
-
-        except ValueError:
-            flash("Amount must be a positive number.", "error")
-            return redirect(url_for("add_transaction_page"))
+        except (TypeError, ValueError):
+            flash("Please enter a valid amount.", "error")
+            return render_template(
+                "add_transaction.html",
+                today=date.today().isoformat()
+            )
 
         if transaction_type not in ["income", "expense"]:
-            flash("Invalid transaction type.", "error")
-            return redirect(url_for("add_transaction_page"))
+            flash("Please select a valid transaction type.", "error")
+
+            return render_template(
+                "add_transaction.html",
+                today=date.today().isoformat()
+            )
+
+        if amount <= 0:
+            flash("Amount must be greater than zero.", "error")
+
+            return render_template(
+                "add_transaction.html",
+                today=date.today().isoformat()
+            )
+
+        if not category:
+            flash("Category is required.", "error")
+
+            return render_template(
+                "add_transaction.html",
+                today=date.today().isoformat()
+            )
+
+        if not transaction_date:
+            flash("Date is required.", "error")
+
+            return render_template(
+                "add_transaction.html",
+                today=date.today().isoformat()
+            )
 
         add_transaction(
             transaction_type,
             amount,
-            category,
-            description,
+            category.strip(),
+            description.strip() if description else "",
             transaction_date
         )
 
@@ -122,7 +165,10 @@ def add_transaction_page():
     )
 
 
-@app.route("/transactions/edit/<int:transaction_id>", methods=["GET", "POST"])
+@app.route(
+    "/transactions/edit/<int:transaction_id>",
+    methods=["GET", "POST"]
+)
 def edit_transaction_page(transaction_id):
 
     transaction = get_transaction(transaction_id)
@@ -139,45 +185,54 @@ def edit_transaction_page(transaction_id):
         description = request.form.get("description")
         transaction_date = request.form.get("date")
 
-        if not transaction_type or not amount or not category or not transaction_date:
-            flash("Please fill in all required fields.", "error")
-            return redirect(
-                url_for(
-                    "edit_transaction_page",
-                    transaction_id=transaction_id
-                )
-            )
-
         try:
             amount = float(amount)
+        except (TypeError, ValueError):
+            flash("Please enter a valid amount.", "error")
 
-            if amount <= 0:
-                raise ValueError
-
-        except ValueError:
-            flash("Amount must be a positive number.", "error")
-            return redirect(
-                url_for(
-                    "edit_transaction_page",
-                    transaction_id=transaction_id
-                )
+            return render_template(
+                "edit_transaction.html",
+                transaction=transaction
             )
 
         if transaction_type not in ["income", "expense"]:
-            flash("Invalid transaction type.", "error")
-            return redirect(
-                url_for(
-                    "edit_transaction_page",
-                    transaction_id=transaction_id
-                )
+            flash("Please select a valid transaction type.", "error")
+
+            return render_template(
+                "edit_transaction.html",
+                transaction=transaction
+            )
+
+        if amount <= 0:
+            flash("Amount must be greater than zero.", "error")
+
+            return render_template(
+                "edit_transaction.html",
+                transaction=transaction
+            )
+
+        if not category:
+            flash("Category is required.", "error")
+
+            return render_template(
+                "edit_transaction.html",
+                transaction=transaction
+            )
+
+        if not transaction_date:
+            flash("Date is required.", "error")
+
+            return render_template(
+                "edit_transaction.html",
+                transaction=transaction
             )
 
         update_transaction(
             transaction_id,
             transaction_type,
             amount,
-            category,
-            description,
+            category.strip(),
+            description.strip() if description else "",
             transaction_date
         )
 
@@ -191,7 +246,10 @@ def edit_transaction_page(transaction_id):
     )
 
 
-@app.route("/transactions/delete/<int:transaction_id>", methods=["POST"])
+@app.route(
+    "/transactions/delete/<int:transaction_id>",
+    methods=["POST"]
+)
 def delete_transaction_page(transaction_id):
 
     transaction = get_transaction(transaction_id)
@@ -214,12 +272,13 @@ def delete_transaction_page(transaction_id):
 @app.route("/budgets")
 def budgets():
 
+    budget_list = get_all_budgets()
+
     budget_data = get_budget_data()
-    budgets_list = get_all_budgets()
 
     return render_template(
         "budgets.html",
-        budgets=budgets_list,
+        budgets=budget_list,
         budget_data=budget_data
     )
 
@@ -232,21 +291,24 @@ def add_budget_page():
         category = request.form.get("category")
         amount = request.form.get("amount")
 
-        if not category or not amount:
-            flash("Please fill in all required fields.", "error")
-            return redirect(url_for("add_budget_page"))
-
         try:
             amount = float(amount)
+        except (TypeError, ValueError):
+            flash("Please enter a valid budget amount.", "error")
+            return render_template("add_budget.html")
 
-            if amount <= 0:
-                raise ValueError
+        if not category:
+            flash("Category is required.", "error")
+            return render_template("add_budget.html")
 
-        except ValueError:
-            flash("Budget amount must be a positive number.", "error")
-            return redirect(url_for("add_budget_page"))
+        if amount <= 0:
+            flash("Budget amount must be greater than zero.", "error")
+            return render_template("add_budget.html")
 
-        add_budget(category, amount)
+        add_budget(
+            category.strip(),
+            amount
+        )
 
         flash("Budget saved successfully.", "success")
 
@@ -255,7 +317,10 @@ def add_budget_page():
     return render_template("add_budget.html")
 
 
-@app.route("/budgets/edit/<int:budget_id>", methods=["GET", "POST"])
+@app.route(
+    "/budgets/edit/<int:budget_id>",
+    methods=["GET", "POST"]
+)
 def edit_budget_page(budget_id):
 
     budget = get_budget(budget_id)
@@ -269,33 +334,35 @@ def edit_budget_page(budget_id):
         category = request.form.get("category")
         amount = request.form.get("amount")
 
-        if not category or not amount:
-            flash("Please fill in all required fields.", "error")
-            return redirect(
-                url_for(
-                    "edit_budget_page",
-                    budget_id=budget_id
-                )
-            )
-
         try:
             amount = float(amount)
+        except (TypeError, ValueError):
+            flash("Please enter a valid budget amount.", "error")
 
-            if amount <= 0:
-                raise ValueError
+            return render_template(
+                "edit_budget.html",
+                budget=budget
+            )
 
-        except ValueError:
-            flash("Budget amount must be a positive number.", "error")
-            return redirect(
-                url_for(
-                    "edit_budget_page",
-                    budget_id=budget_id
-                )
+        if not category:
+            flash("Category is required.", "error")
+
+            return render_template(
+                "edit_budget.html",
+                budget=budget
+            )
+
+        if amount <= 0:
+            flash("Budget amount must be greater than zero.", "error")
+
+            return render_template(
+                "edit_budget.html",
+                budget=budget
             )
 
         update_budget(
             budget_id,
-            category,
+            category.strip(),
             amount
         )
 
@@ -309,7 +376,10 @@ def edit_budget_page(budget_id):
     )
 
 
-@app.route("/budgets/delete/<int:budget_id>", methods=["POST"])
+@app.route(
+    "/budgets/delete/<int:budget_id>",
+    methods=["POST"]
+)
 def delete_budget_page(budget_id):
 
     budget = get_budget(budget_id)
@@ -332,12 +402,14 @@ def delete_budget_page(budget_id):
 @app.route("/analytics")
 def analytics():
 
-    selected_month = request.args.get(
-        "month",
-        date.today().strftime("%Y-%m")
-    )
+    selected_month = request.args.get("month")
 
-    analytics_data = get_monthly_analytics(selected_month)
+    if not selected_month:
+        selected_month = date.today().strftime("%Y-%m")
+
+    analytics_data = get_monthly_analytics(
+        selected_month
+    )
 
     return render_template(
         "analytics.html",
@@ -347,17 +419,199 @@ def analytics():
 
 
 # -------------------------
-# Error Handling
+# Goals
 # -------------------------
 
-@app.errorhandler(404)
-def page_not_found(error):
+@app.route("/goals")
+def goals():
+
+    goal_list = get_all_goals()
+
+    goal_data = get_goal_data()
 
     return render_template(
-        "index.html",
-        summary=get_financial_summary(),
-        transactions=get_all_transactions()
-    ), 404
+        "goals.html",
+        goals=goal_list,
+        goal_data=goal_data
+    )
+
+
+@app.route("/goals/add", methods=["GET", "POST"])
+def add_goal_page():
+
+    if request.method == "POST":
+
+        name = request.form.get("name")
+        target_amount = request.form.get("target_amount")
+        saved_amount = request.form.get("saved_amount")
+        deadline = request.form.get("deadline")
+        description = request.form.get("description")
+
+        try:
+            target_amount = float(target_amount)
+
+            if saved_amount:
+                saved_amount = float(saved_amount)
+            else:
+                saved_amount = 0
+
+        except (TypeError, ValueError):
+            flash("Please enter valid amounts.", "error")
+            return render_template("add_goal.html")
+
+        if not name:
+            flash("Goal name is required.", "error")
+            return render_template("add_goal.html")
+
+        if target_amount <= 0:
+            flash(
+                "Target amount must be greater than zero.",
+                "error"
+            )
+            return render_template("add_goal.html")
+
+        if saved_amount < 0:
+            flash(
+                "Saved amount cannot be negative.",
+                "error"
+            )
+            return render_template("add_goal.html")
+
+        if saved_amount > target_amount:
+            flash(
+                "Saved amount cannot exceed the target amount.",
+                "error"
+            )
+            return render_template("add_goal.html")
+
+        add_goal(
+            name.strip(),
+            target_amount,
+            saved_amount,
+            deadline,
+            description.strip() if description else ""
+        )
+
+        flash("Goal created successfully.", "success")
+
+        return redirect(url_for("goals"))
+
+    return render_template("add_goal.html")
+
+
+@app.route(
+    "/goals/edit/<int:goal_id>",
+    methods=["GET", "POST"]
+)
+def edit_goal_page(goal_id):
+
+    goal = get_goal(goal_id)
+
+    if not goal:
+        flash("Goal not found.", "error")
+        return redirect(url_for("goals"))
+
+    if request.method == "POST":
+
+        name = request.form.get("name")
+        target_amount = request.form.get("target_amount")
+        saved_amount = request.form.get("saved_amount")
+        deadline = request.form.get("deadline")
+        description = request.form.get("description")
+
+        try:
+            target_amount = float(target_amount)
+
+            if saved_amount:
+                saved_amount = float(saved_amount)
+            else:
+                saved_amount = 0
+
+        except (TypeError, ValueError):
+            flash("Please enter valid amounts.", "error")
+
+            return render_template(
+                "edit_goal.html",
+                goal=goal
+            )
+
+        if not name:
+            flash("Goal name is required.", "error")
+
+            return render_template(
+                "edit_goal.html",
+                goal=goal
+            )
+
+        if target_amount <= 0:
+            flash(
+                "Target amount must be greater than zero.",
+                "error"
+            )
+
+            return render_template(
+                "edit_goal.html",
+                goal=goal
+            )
+
+        if saved_amount < 0:
+            flash(
+                "Saved amount cannot be negative.",
+                "error"
+            )
+
+            return render_template(
+                "edit_goal.html",
+                goal=goal
+            )
+
+        if saved_amount > target_amount:
+            flash(
+                "Saved amount cannot exceed the target amount.",
+                "error"
+            )
+
+            return render_template(
+                "edit_goal.html",
+                goal=goal
+            )
+
+        update_goal(
+            goal_id,
+            name.strip(),
+            target_amount,
+            saved_amount,
+            deadline,
+            description.strip() if description else ""
+        )
+
+        flash("Goal updated successfully.", "success")
+
+        return redirect(url_for("goals"))
+
+    return render_template(
+        "edit_goal.html",
+        goal=goal
+    )
+
+
+@app.route(
+    "/goals/delete/<int:goal_id>",
+    methods=["POST"]
+)
+def delete_goal_page(goal_id):
+
+    goal = get_goal(goal_id)
+
+    if not goal:
+        flash("Goal not found.", "error")
+        return redirect(url_for("goals"))
+
+    delete_goal(goal_id)
+
+    flash("Goal deleted successfully.", "success")
+
+    return redirect(url_for("goals"))
 
 
 # -------------------------
@@ -365,8 +619,4 @@ def page_not_found(error):
 # -------------------------
 
 if __name__ == "__main__":
-    app.run(
-        host="0.0.0.0",
-        port=5000,
-        debug=True
-    )
+    app.run(debug=True)
