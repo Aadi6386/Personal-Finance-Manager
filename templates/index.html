@@ -1,0 +1,312 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Personal Finance Manager{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <div>
+        <h1>Dashboard</h1>
+        <p class="page-subtitle">
+            Track your income, expenses and overall financial health.
+        </p>
+    </div>
+
+    <a href="{{ url_for('add_transaction_page') }}" class="button primary">
+        + Add Transaction
+    </a>
+
+</div>
+
+
+<!-- Financial Summary -->
+
+<section class="summary-grid">
+
+    <div class="summary-card income-card">
+
+        <div class="summary-icon">
+            ↑
+        </div>
+
+        <div>
+            <p class="summary-label">Total Income</p>
+
+            <h2>
+                ₹{{ "%.2f"|format(summary.total_income) }}
+            </h2>
+        </div>
+
+    </div>
+
+
+    <div class="summary-card expense-card">
+
+        <div class="summary-icon">
+            ↓
+        </div>
+
+        <div>
+            <p class="summary-label">Total Expenses</p>
+
+            <h2>
+                ₹{{ "%.2f"|format(summary.total_expenses) }}
+            </h2>
+        </div>
+
+    </div>
+
+
+    <div class="summary-card balance-card">
+
+        <div class="summary-icon">
+            ₹
+        </div>
+
+        <div>
+            <p class="summary-label">Balance</p>
+
+            <h2>
+                ₹{{ "%.2f"|format(summary.balance) }}
+            </h2>
+        </div>
+
+    </div>
+
+
+    <div class="summary-card">
+
+        <div class="summary-icon">
+            #
+        </div>
+
+        <div>
+            <p class="summary-label">Transactions</p>
+
+            <h2>
+                {{ summary.transaction_count }}
+            </h2>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- Quick Actions -->
+
+<section class="section">
+
+    <div class="section-header">
+
+        <div>
+            <h2>Quick Actions</h2>
+            <p class="section-subtitle">
+                Manage your finances quickly.
+            </p>
+        </div>
+
+    </div>
+
+
+    <div class="quick-actions">
+
+        <a
+            href="{{ url_for('add_transaction_page') }}"
+            class="action-card"
+        >
+
+            <span class="action-icon">+</span>
+
+            <div>
+                <h3>Add Transaction</h3>
+                <p>Record income or an expense.</p>
+            </div>
+
+        </a>
+
+
+        <a
+            href="{{ url_for('budgets') }}"
+            class="action-card"
+        >
+
+            <span class="action-icon">₹</span>
+
+            <div>
+                <h3>Manage Budgets</h3>
+                <p>Set and monitor spending limits.</p>
+            </div>
+
+        </a>
+
+
+        <a
+            href="{{ url_for('analytics') }}"
+            class="action-card"
+        >
+
+            <span class="action-icon">↗</span>
+
+            <div>
+                <h3>View Analytics</h3>
+                <p>Understand your monthly spending.</p>
+            </div>
+
+        </a>
+
+    </div>
+
+</section>
+
+
+<!-- Recent Transactions -->
+
+<section class="section">
+
+    <div class="section-header">
+
+        <div>
+            <h2>Recent Transactions</h2>
+
+            <p class="section-subtitle">
+                Your latest financial activity.
+            </p>
+        </div>
+
+
+        <a
+            href="{{ url_for('transactions') }}"
+            class="button secondary"
+        >
+            View All
+        </a>
+
+    </div>
+
+
+    {% if transactions %}
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Date</th>
+
+                        <th>Type</th>
+
+                        <th>Category</th>
+
+                        <th>Description</th>
+
+                        <th>Amount</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for transaction in transactions[:10] %}
+
+                        <tr>
+
+                            <td>
+                                {{ transaction.date }}
+                            </td>
+
+
+                            <td>
+
+                                {% if transaction.type == "income" %}
+
+                                    <span class="badge income">
+                                        Income
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge expense">
+                                        Expense
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+                                {{ transaction.category }}
+                            </td>
+
+
+                            <td>
+                                {{ transaction.description or "—" }}
+                            </td>
+
+
+                            <td
+                                class="
+                                amount
+                                {% if transaction.type == 'income' %}
+                                    positive
+                                {% else %}
+                                    negative
+                                {% endif %}
+                                "
+                            >
+
+                                {% if transaction.type == "income" %}
+                                    +
+                                {% else %}
+                                    -
+                                {% endif %}
+
+                                ₹{{ "%.2f"|format(transaction.amount) }}
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    {% else %}
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                ₹
+            </div>
+
+            <h3>No transactions yet</h3>
+
+            <p>
+                Start tracking your finances by adding your first transaction.
+            </p>
+
+            <a
+                href="{{ url_for('add_transaction_page') }}"
+                class="button primary"
+            >
+                Add Your First Transaction
+            </a>
+
+        </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}
