@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+
+{% block title %}Transactions | Personal Finance Manager{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <div>
+        <h1>Transactions</h1>
+        <p class="page-subtitle">
+            View, search and manage all your financial transactions.
+        </p>
+    </div>
+
+    <a
+        href="{{ url_for('add_transaction_page') }}"
+        class="button primary"
+    >
+        + Add Transaction
+    </a>
+
+</div>
+
+
+<!-- Filters -->
+
+<section class="filter-card">
+
+    <form method="GET" action="{{ url_for('transactions') }}" class="filter-form">
+
+        <div class="form-group">
+
+            <label for="type">
+                Type
+            </label>
+
+            <select name="type" id="type">
+
+                <option value="">
+                    All Types
+                </option>
+
+                <option
+                    value="income"
+                    {% if selected_type == "income" %}selected{% endif %}
+                >
+                    Income
+                </option>
+
+                <option
+                    value="expense"
+                    {% if selected_type == "expense" %}selected{% endif %}
+                >
+                    Expense
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="category">
+                Category
+            </label>
+
+            <input
+                type="text"
+                name="category"
+                id="category"
+                placeholder="e.g. Food"
+                value="{{ selected_category or '' }}"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="search">
+                Search
+            </label>
+
+            <input
+                type="text"
+                name="search"
+                id="search"
+                placeholder="Search description..."
+                value="{{ search or '' }}"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="start_date">
+                From
+            </label>
+
+            <input
+                type="date"
+                name="start_date"
+                id="start_date"
+                value="{{ start_date or '' }}"
+            >
+
+        </div>
+
+
+        <div class="form-group">
+
+            <label for="end_date">
+                To
+            </label>
+
+            <input
+                type="date"
+                name="end_date"
+                id="end_date"
+                value="{{ end_date or '' }}"
+            >
+
+        </div>
+
+
+        <div class="filter-actions">
+
+            <button
+                type="submit"
+                class="button primary"
+            >
+                Apply Filters
+            </button>
+
+            <a
+                href="{{ url_for('transactions') }}"
+                class="button secondary"
+            >
+                Clear
+            </a>
+
+        </div>
+
+    </form>
+
+</section>
+
+
+<!-- Transactions Table -->
+
+<section class="section">
+
+    <div class="section-header">
+
+        <div>
+
+            <h2>
+                All Transactions
+            </h2>
+
+            <p class="section-subtitle">
+
+                {% if transactions %}
+                    {{ transactions|length }} transaction(s) found.
+                {% else %}
+                    No transactions found.
+                {% endif %}
+
+            </p>
+
+        </div>
+
+    </div>
+
+
+    {% if transactions %}
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Date</th>
+
+                        <th>Type</th>
+
+                        <th>Category</th>
+
+                        <th>Description</th>
+
+                        <th>Amount</th>
+
+                        <th>Actions</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for transaction in transactions %}
+
+                        <tr>
+
+                            <td>
+                                {{ transaction.date }}
+                            </td>
+
+
+                            <td>
+
+                                {% if transaction.type == "income" %}
+
+                                    <span class="badge income">
+                                        Income
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge expense">
+                                        Expense
+                                    </span>
+
+                                {% endif %}
+
+                            </td>
+
+
+                            <td>
+                                {{ transaction.category }}
+                            </td>
+
+
+                            <td>
+                                {{ transaction.description or "—" }}
+                            </td>
+
+
+                            <td>
+
+                                <span
+                                    class="
+                                    amount
+                                    {% if transaction.type == 'income' %}
+                                        positive
+                                    {% else %}
+                                        negative
+                                    {% endif %}
+                                    "
+                                >
+
+                                    {% if transaction.type == "income" %}
+                                        +
+                                    {% else %}
+                                        -
+                                    {% endif %}
+
+                                    ₹{{ "%.2f"|format(transaction.amount) }}
+
+                                </span>
+
+                            </td>
+
+
+                            <td>
+
+                                <div class="table-actions">
+
+                                    <a
+                                        href="{{ url_for(
+                                            'edit_transaction_page',
+                                            transaction_id=transaction.id
+                                        ) }}"
+                                        class="button small secondary"
+                                    >
+                                        Edit
+                                    </a>
+
+
+                                    <form
+                                        method="POST"
+                                        action="{{ url_for(
+                                            'delete_transaction_page',
+                                            transaction_id=transaction.id
+                                        ) }}"
+                                        class="delete-form"
+                                    >
+
+                                        <button
+                                            type="submit"
+                                            class="button small danger"
+                                            onclick="return confirm(
+                                                'Are you sure you want to delete this transaction?'
+                                            );"
+                                        >
+                                            Delete
+                                        </button>
+
+                                    </form>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    {% else %}
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                ₹
+            </div>
+
+            <h3>
+                No transactions found
+            </h3>
+
+            <p>
+                Try changing your filters or add a new transaction.
+            </p>
+
+            <a
+                href="{{ url_for('add_transaction_page') }}"
+                class="button primary"
+            >
+                Add Transaction
+            </a>
+
+        </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}
