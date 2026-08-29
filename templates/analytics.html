@@ -1,0 +1,443 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics | Personal Finance Manager{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <div>
+        <h1>Monthly Analytics</h1>
+
+        <p class="page-subtitle">
+            Understand your income, expenses and spending patterns.
+        </p>
+    </div>
+
+</div>
+
+
+<!-- Month Selector -->
+
+<section class="filter-card">
+
+    <form
+        method="GET"
+        action="{{ url_for('analytics') }}"
+        class="filter-form"
+    >
+
+        <div class="form-group">
+
+            <label for="month">
+                Select Month
+            </label>
+
+            <input
+                type="month"
+                name="month"
+                id="month"
+                value="{{ selected_month }}"
+                required
+            >
+
+        </div>
+
+
+        <div class="filter-actions">
+
+            <button
+                type="submit"
+                class="button primary"
+            >
+                View Analytics
+            </button>
+
+        </div>
+
+    </form>
+
+</section>
+
+
+<!-- Monthly Summary -->
+
+<section class="summary-grid">
+
+    <div class="summary-card income-card">
+
+        <div class="summary-icon">
+            ↑
+        </div>
+
+        <div>
+
+            <p class="summary-label">
+                Monthly Income
+            </p>
+
+            <h2>
+                ₹{{ "%.2f"|format(analytics.income) }}
+            </h2>
+
+        </div>
+
+    </div>
+
+
+    <div class="summary-card expense-card">
+
+        <div class="summary-icon">
+            ↓
+        </div>
+
+        <div>
+
+            <p class="summary-label">
+                Monthly Expenses
+            </p>
+
+            <h2>
+                ₹{{ "%.2f"|format(analytics.expenses) }}
+            </h2>
+
+        </div>
+
+    </div>
+
+
+    <div class="summary-card balance-card">
+
+        <div class="summary-icon">
+            ₹
+        </div>
+
+        <div>
+
+            <p class="summary-label">
+                Monthly Savings
+            </p>
+
+            <h2>
+                ₹{{ "%.2f"|format(analytics.savings) }}
+            </h2>
+
+        </div>
+
+    </div>
+
+
+    <div class="summary-card">
+
+        <div class="summary-icon">
+            %
+        </div>
+
+        <div>
+
+            <p class="summary-label">
+                Savings Rate
+            </p>
+
+            <h2>
+                {{ "%.1f"|format(analytics.savings_rate) }}%
+            </h2>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- Insights -->
+
+<section class="section">
+
+    <div class="section-header">
+
+        <div>
+
+            <h2>
+                Monthly Insights
+            </h2>
+
+            <p class="section-subtitle">
+                A quick overview of your financial activity.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="insights-grid">
+
+        <div class="insight-card">
+
+            <span class="insight-label">
+                Transactions
+            </span>
+
+            <strong>
+                {{ analytics.transaction_count }}
+            </strong>
+
+            <p>
+                Total transactions during this month.
+            </p>
+
+        </div>
+
+
+        <div class="insight-card">
+
+            <span class="insight-label">
+                Top Spending Category
+            </span>
+
+            <strong>
+                {{ analytics.top_category }}
+            </strong>
+
+            <p>
+                ₹{{ "%.2f"|format(analytics.top_category_amount) }}
+                spent in this category.
+            </p>
+
+        </div>
+
+
+        <div class="insight-card">
+
+            <span class="insight-label">
+                Selected Month
+            </span>
+
+            <strong>
+                {{ analytics.month }}
+            </strong>
+
+            <p>
+                Analytics are calculated for this month.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- Category Spending -->
+
+<section class="section">
+
+    <div class="section-header">
+
+        <div>
+
+            <h2>
+                Spending by Category
+            </h2>
+
+            <p class="section-subtitle">
+                See where your money was spent.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    {% if analytics.category_spending %}
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Category</th>
+
+                        <th>Amount Spent</th>
+
+                        <th>Share of Expenses</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for item in analytics.category_spending %}
+
+                        {% if analytics.expenses > 0 %}
+
+                            {% set percentage =
+                                (item.total / analytics.expenses) * 100
+                            %}
+
+                        {% else %}
+
+                            {% set percentage = 0 %}
+
+                        {% endif %}
+
+
+                        <tr>
+
+                            <td>
+                                {{ item.category }}
+                            </td>
+
+
+                            <td class="amount negative">
+
+                                -₹{{ "%.2f"|format(item.total) }}
+
+                            </td>
+
+
+                            <td>
+
+                                <div class="analytics-progress">
+
+                                    <div class="progress-bar">
+
+                                        <div
+                                            class="progress-fill"
+                                            style="width: {{ percentage }}%;"
+                                        ></div>
+
+                                    </div>
+
+                                    <span>
+                                        {{ "%.1f"|format(percentage) }}%
+                                    </span>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    {% else %}
+
+        <div class="empty-state">
+
+            <div class="empty-icon">
+                ↗
+            </div>
+
+            <h3>
+                No spending data
+            </h3>
+
+            <p>
+                There are no expense transactions for the selected month.
+            </p>
+
+        </div>
+
+    {% endif %}
+
+</section>
+
+
+<!-- Daily Spending -->
+
+<section class="section">
+
+    <div class="section-header">
+
+        <div>
+
+            <h2>
+                Daily Spending
+            </h2>
+
+            <p class="section-subtitle">
+                Your expenses grouped by date.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    {% if analytics.daily_spending %}
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Date</th>
+
+                        <th>Daily Spending</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    {% for item in analytics.daily_spending %}
+
+                        <tr>
+
+                            <td>
+                                {{ item.date }}
+                            </td>
+
+                            <td class="amount negative">
+
+                                -₹{{ "%.2f"|format(item.total) }}
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    {% else %}
+
+        <div class="empty-state">
+
+            <h3>
+                No daily spending data
+            </h3>
+
+            <p>
+                Add expense transactions to see your daily spending.
+            </p>
+
+        </div>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}
