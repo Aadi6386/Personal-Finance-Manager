@@ -32,6 +32,18 @@ def initialize_database():
         )
     """)
 
+    connection.execute("""
+        CREATE TABLE IF NOT EXISTS goals (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            target_amount REAL NOT NULL CHECK(target_amount > 0),
+            saved_amount REAL NOT NULL DEFAULT 0
+                CHECK(saved_amount >= 0),
+            deadline TEXT,
+            description TEXT
+        )
+    """)
+
     connection.commit()
     connection.close()
 
@@ -405,3 +417,144 @@ def get_monthly_analytics(month):
         "category_spending": category_spending,
         "daily_spending": daily_spending
     }
+
+
+# -------------------------
+# Goal Functions
+# -------------------------
+
+def add_goal(name, target_amount, saved_amount, deadline, description):
+    connection = get_db_connection()
+
+    connection.execute("""
+        INSERT INTO goals
+        (name, target_amount, saved_amount, deadline, description)
+        VALUES (?, ?, ?, ?, ?)
+    """, (
+        name,
+        target_amount,
+        saved_amount,
+        deadline,
+        description
+    ))
+
+    connection.commit()
+    connection.close()
+
+
+def get_all_goals():
+    connection = get_db_connection()
+
+    goals = connection.execute("""
+        SELECT *
+        FROM goals
+        ORDER BY
+            CASE
+                WHEN deadline IS NULL OR deadline = '' THEN 1
+                ELSE 0
+            END,
+            deadline ASC,
+            id DESC
+    """).fetchall()
+
+    connection.close()
+
+    return goals
+
+
+def get_goal(goal_id):
+    connection = get_db_connection()
+
+    goal = connection.execute("""
+        SELECT *
+        FROM goals
+        WHERE id = ?
+    """, (goal_id,)).fetchone()
+
+    connection.close()
+
+    return goal
+
+
+def update_goal(
+    goal_id,
+    name,
+    target_amount,
+    saved_amount,
+    deadline,
+    description
+):
+    connection = get_db_connection()
+
+    connection.execute("""
+        UPDATE goals
+        SET name = ?,
+            target_amount = ?,
+            saved_amount = ?,
+            deadline = ?,
+            description = ?
+        WHERE id = ?
+    """, (
+        name,
+        target_amount,
+        saved_amount,
+        deadline,
+        description,
+        goal_id
+    ))
+
+    connection.commit()
+    connection.close()
+
+
+def delete_goal(goal_id):
+    connection = get_db_connection()
+
+    connection.execute("""
+        DELETE FROM goals
+        WHERE id = ?
+    """, (goal_id,))
+
+    connection.commit()
+    connection.close()
+
+
+def get_goal_data():
+    connection = get_db_connection()
+
+    goals = connection.execute("""
+        SELECT *
+        FROM goals
+        ORDER BY id DESC
+    """).fetchall()
+
+    goal_data = []
+
+    for goal in goals:
+
+        remaining = goal["target_amount"] - goal["saved_amount"]
+
+        percentage = 0
+
+        if goal["target_amount"] > 0:
+            percentage = (
+                goal["saved_amount"] /
+                goal["target_amount"]
+            ) * 100
+
+        percentage = min(percentage, 100)
+
+        goal_data.append({
+            "id": goal["id"],
+            "name": goal["name"],
+            "target_amount": goal["target_amount"],
+            "saved_amount": goal["saved_amount"],
+            "remaining": remaining,
+            "deadline": goal["deadline"],
+            "description": goal["description"],
+            "percentage": percentage
+        })
+
+    connection.close()
+
+    return goal_data
