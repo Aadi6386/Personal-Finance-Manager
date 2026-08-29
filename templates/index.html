@@ -8,12 +8,16 @@
 
     <div>
         <h1>Dashboard</h1>
+
         <p class="page-subtitle">
-            Track your income, expenses and overall financial health.
+            Here's an overview of your finances.
         </p>
     </div>
 
-    <a href="{{ url_for('add_transaction_page') }}" class="button primary">
+    <a
+        href="{{ url_for('add_transaction_page') }}"
+        class="button primary"
+    >
         + Add Transaction
     </a>
 
@@ -24,137 +28,62 @@
 
 <section class="summary-grid">
 
-    <div class="summary-card income-card">
+    <div class="summary-card">
 
-        <div class="summary-icon">
-            ↑
-        </div>
+        <span class="summary-label">
+            Total Income
+        </span>
 
-        <div>
-            <p class="summary-label">Total Income</p>
-
-            <h2>
-                ₹{{ "%.2f"|format(summary.total_income) }}
-            </h2>
-        </div>
-
-    </div>
-
-
-    <div class="summary-card expense-card">
-
-        <div class="summary-icon">
-            ↓
-        </div>
-
-        <div>
-            <p class="summary-label">Total Expenses</p>
-
-            <h2>
-                ₹{{ "%.2f"|format(summary.total_expenses) }}
-            </h2>
-        </div>
-
-    </div>
-
-
-    <div class="summary-card balance-card">
-
-        <div class="summary-icon">
-            ₹
-        </div>
-
-        <div>
-            <p class="summary-label">Balance</p>
-
-            <h2>
-                ₹{{ "%.2f"|format(summary.balance) }}
-            </h2>
-        </div>
+        <h2 class="positive">
+            ₹{{ "%.2f"|format(summary.total_income) }}
+        </h2>
 
     </div>
 
 
     <div class="summary-card">
 
-        <div class="summary-icon">
-            #
-        </div>
+        <span class="summary-label">
+            Total Expenses
+        </span>
 
-        <div>
-            <p class="summary-label">Transactions</p>
-
-            <h2>
-                {{ summary.transaction_count }}
-            </h2>
-        </div>
-
-    </div>
-
-</section>
-
-
-<!-- Quick Actions -->
-
-<section class="section">
-
-    <div class="section-header">
-
-        <div>
-            <h2>Quick Actions</h2>
-            <p class="section-subtitle">
-                Manage your finances quickly.
-            </p>
-        </div>
+        <h2 class="negative">
+            ₹{{ "%.2f"|format(summary.total_expenses) }}
+        </h2>
 
     </div>
 
 
-    <div class="quick-actions">
+    <div class="summary-card">
 
-        <a
-            href="{{ url_for('add_transaction_page') }}"
-            class="action-card"
+        <span class="summary-label">
+            Current Balance
+        </span>
+
+        <h2
+            class="
+            {% if summary.balance >= 0 %}
+                positive
+            {% else %}
+                negative
+            {% endif %}
+            "
         >
+            ₹{{ "%.2f"|format(summary.balance) }}
+        </h2>
 
-            <span class="action-icon">+</span>
-
-            <div>
-                <h3>Add Transaction</h3>
-                <p>Record income or an expense.</p>
-            </div>
-
-        </a>
+    </div>
 
 
-        <a
-            href="{{ url_for('budgets') }}"
-            class="action-card"
-        >
+    <div class="summary-card">
 
-            <span class="action-icon">₹</span>
+        <span class="summary-label">
+            Transactions
+        </span>
 
-            <div>
-                <h3>Manage Budgets</h3>
-                <p>Set and monitor spending limits.</p>
-            </div>
-
-        </a>
-
-
-        <a
-            href="{{ url_for('analytics') }}"
-            class="action-card"
-        >
-
-            <span class="action-icon">↗</span>
-
-            <div>
-                <h3>View Analytics</h3>
-                <p>Understand your monthly spending.</p>
-            </div>
-
-        </a>
+        <h2>
+            {{ summary.transaction_count }}
+        </h2>
 
     </div>
 
@@ -168,11 +97,15 @@
     <div class="section-header">
 
         <div>
-            <h2>Recent Transactions</h2>
+
+            <h2>
+                Recent Transactions
+            </h2>
 
             <p class="section-subtitle">
-                Your latest financial activity.
+                Your latest income and expenses.
             </p>
+
         </div>
 
 
@@ -186,7 +119,7 @@
     </div>
 
 
-    {% if transactions %}
+    {% if recent_transactions %}
 
         <div class="table-container">
 
@@ -196,15 +129,25 @@
 
                     <tr>
 
-                        <th>Date</th>
+                        <th>
+                            Date
+                        </th>
 
-                        <th>Type</th>
+                        <th>
+                            Type
+                        </th>
 
-                        <th>Category</th>
+                        <th>
+                            Category
+                        </th>
 
-                        <th>Description</th>
+                        <th>
+                            Description
+                        </th>
 
-                        <th>Amount</th>
+                        <th>
+                            Amount
+                        </th>
 
                     </tr>
 
@@ -213,14 +156,13 @@
 
                 <tbody>
 
-                    {% for transaction in transactions[:10] %}
+                    {% for transaction in recent_transactions %}
 
                         <tr>
 
                             <td>
                                 {{ transaction.date }}
                             </td>
-
 
                             <td>
 
@@ -253,7 +195,6 @@
 
                             <td
                                 class="
-                                amount
                                 {% if transaction.type == 'income' %}
                                     positive
                                 {% else %}
@@ -290,10 +231,13 @@
                 ₹
             </div>
 
-            <h3>No transactions yet</h3>
+            <h3>
+                No transactions yet
+            </h3>
 
             <p>
-                Start tracking your finances by adding your first transaction.
+                Add your first income or expense to start
+                tracking your finances.
             </p>
 
             <a
@@ -306,6 +250,97 @@
         </div>
 
     {% endif %}
+
+</section>
+
+
+<!-- Quick Actions -->
+
+<section class="section">
+
+    <div class="section-header">
+
+        <div>
+
+            <h2>
+                Quick Actions
+            </h2>
+
+            <p class="section-subtitle">
+                Manage your finances quickly.
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <div class="quick-actions">
+
+        <a
+            href="{{ url_for('add_transaction_page') }}"
+            class="quick-action"
+        >
+
+            <strong>
+                Add Transaction
+            </strong>
+
+            <span>
+                Record income or expense
+            </span>
+
+        </a>
+
+
+        <a
+            href="{{ url_for('budgets') }}"
+            class="quick-action"
+        >
+
+            <strong>
+                Manage Budgets
+            </strong>
+
+            <span>
+                Set and monitor spending limits
+            </span>
+
+        </a>
+
+
+        <a
+            href="{{ url_for('goals') }}"
+            class="quick-action"
+        >
+
+            <strong>
+                Savings Goals
+            </strong>
+
+            <span>
+                Track your financial goals
+            </span>
+
+        </a>
+
+
+        <a
+            href="{{ url_for('analytics') }}"
+            class="quick-action"
+        >
+
+            <strong>
+                View Analytics
+            </strong>
+
+            <span>
+                Understand your spending
+            </span>
+
+        </a>
+
+    </div>
 
 </section>
 
