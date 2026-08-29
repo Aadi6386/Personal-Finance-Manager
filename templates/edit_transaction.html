@@ -8,6 +8,7 @@
 
     <div>
         <h1>Edit Transaction</h1>
+
         <p class="page-subtitle">
             Update the details of this transaction.
         </p>
@@ -40,7 +41,8 @@
             <div class="form-group">
 
                 <label for="type">
-                    Transaction Type <span class="required">*</span>
+                    Transaction Type
+                    <span class="required">*</span>
                 </label>
 
                 <select
@@ -51,14 +53,18 @@
 
                     <option
                         value="income"
-                        {% if transaction.type == "income" %}selected{% endif %}
+                        {% if transaction.type == "income" %}
+                            selected
+                        {% endif %}
                     >
                         Income
                     </option>
 
                     <option
                         value="expense"
-                        {% if transaction.type == "expense" %}selected{% endif %}
+                        {% if transaction.type == "expense" %}
+                            selected
+                        {% endif %}
                     >
                         Expense
                     </option>
@@ -73,7 +79,8 @@
             <div class="form-group">
 
                 <label for="amount">
-                    Amount <span class="required">*</span>
+                    Amount
+                    <span class="required">*</span>
                 </label>
 
                 <input
@@ -94,7 +101,8 @@
             <div class="form-group">
 
                 <label for="category">
-                    Category <span class="required">*</span>
+                    Category
+                    <span class="required">*</span>
                 </label>
 
                 <input
@@ -102,7 +110,7 @@
                     name="category"
                     id="category"
                     value="{{ transaction.category }}"
-                    placeholder="e.g. Food, Salary, Transport"
+                    placeholder="e.g. Salary, Food, Travel"
                     required
                 >
 
@@ -114,7 +122,8 @@
             <div class="form-group">
 
                 <label for="date">
-                    Date <span class="required">*</span>
+                    Date
+                    <span class="required">*</span>
                 </label>
 
                 <input
@@ -140,7 +149,7 @@
                     name="description"
                     id="description"
                     rows="4"
-                    placeholder="Add a short description..."
+                    placeholder="Add a note about this transaction..."
                 >{{ transaction.description or "" }}</textarea>
 
             </div>
@@ -148,7 +157,7 @@
         </div>
 
 
-        <!-- Form Actions -->
+        <!-- Actions -->
 
         <div class="form-actions">
 
