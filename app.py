@@ -1,3 +1,4 @@
+import os
 from flask import (
     Flask,
     render_template,
@@ -39,7 +40,10 @@ from database import (
 
 app = Flask(__name__)
 
-app.secret_key = "personal-finance-manager-secret-key"
+app.secret_key = os.environ.get(
+    "SECRET_KEY",
+    "development-secret-key"
+)
 
 
 initialize_database()
