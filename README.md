@@ -210,6 +210,9 @@ Personal-Finance-Manager/
 ├── database.py
 ├── requirements.txt
 ├── README.md
+├── CHANGELOG.md
+├── LICENSE
+├── .gitignore
 │
 ├── templates/
 │   ├── base.html
@@ -229,9 +232,13 @@ Personal-Finance-Manager/
     ├── css/
     │   └── style.css
     │
-    └── js/
-        ├── script.js
-        └── analytics.js
+    ├── js/
+    │   ├── script.js
+    │   └── analytics.js
+    │
+    └── images/
+        └── preview.png
+        └── favicon.ico
 ```
 
 `app.py` handles Flask routes, requests, validation, redirects, and page rendering.
