@@ -12,7 +12,7 @@
 ---
 
 <p align="center">
-  <img src="./assets/images/preview.png" alt="Personal Finance Manager Preview" width="900">
+  <img src="./static/images/preview.png" alt="Personal Finance Manager Preview" width="900">
 </p>
 
 ---
