@@ -460,7 +460,7 @@ Planned enhancements may include:
 
 # 📌 Project Status
 
-🟢 **Active Development**
+🟢 **V1.0.0 — Core Features Complete**
 
 Personal Finance Manager is being developed as part of my Python and full-stack development journey.
 
