@@ -270,19 +270,26 @@ def get_budget(budget_id):
 def update_budget(budget_id, category, amount):
     connection = get_db_connection()
 
-    connection.execute("""
-        UPDATE budgets
-        SET category = ?,
-            amount = ?
-        WHERE id = ?
-    """, (
-        category,
-        amount,
-        budget_id
-    ))
+    try:
+        connection.execute("""
+            UPDATE budgets
+            SET category = ?,
+                amount = ?
+            WHERE id = ?
+        """, (
+            category,
+            amount,
+            budget_id
+        ))
 
-    connection.commit()
-    connection.close()
+        connection.commit()
+
+    except sqlite3.IntegrityError:
+        connection.rollback()
+        raise
+
+    finally:
+        connection.close()
 
 
 def delete_budget(budget_id):
