@@ -237,7 +237,7 @@ Personal-Finance-Manager/
     │   └── analytics.js
     │
     └── images/
-        └── preview.png
+        ├── preview.png
         └── favicon.ico
 ```
 
