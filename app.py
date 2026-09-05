@@ -326,60 +326,41 @@ def add_budget_page():
     "/budgets/edit/<int:budget_id>",
     methods=["GET", "POST"]
 )
+@app.route("/edit-budget/<int:budget_id>", methods=["GET", "POST"])
 def edit_budget_page(budget_id):
-
     budget = get_budget(budget_id)
 
-    if not budget:
-        flash("Budget not found.", "error")
-        return redirect(url_for("budgets"))
+    if budget is None:
+        return "Budget not found.", 404
 
     if request.method == "POST":
+        category = request.form.get("category", "").strip()
+        amount = request.form.get("amount", "").strip()
 
-        category = request.form.get("category")
-        amount = request.form.get("amount")
+        if not category or not amount:
+            flash("Please fill in all required fields.", "error")
+            return redirect(url_for("edit_budget_page", budget_id=budget_id))
 
         try:
             amount = float(amount)
-        except (TypeError, ValueError):
-            flash("Please enter a valid budget amount.", "error")
-
-            return render_template(
-                "edit_budget.html",
-                budget=budget
-            )
-
-        if not category:
-            flash("Category is required.", "error")
-
-            return render_template(
-                "edit_budget.html",
-                budget=budget
-            )
+        except ValueError:
+            flash("Budget amount must be a valid number.", "error")
+            return redirect(url_for("edit_budget_page", budget_id=budget_id))
 
         if amount <= 0:
             flash("Budget amount must be greater than zero.", "error")
+            return redirect(url_for("edit_budget_page", budget_id=budget_id))
 
-            return render_template(
-                "edit_budget.html",
-                budget=budget
-            )
-
-        update_budget(
-            budget_id,
-            category.strip(),
-            amount
-        )
+        try:
+            update_budget(budget_id, category, amount)
+        except sqlite3.IntegrityError:
+            flash("A budget for this category already exists.", "error")
+            return redirect(url_for("edit_budget_page", budget_id=budget_id))
 
         flash("Budget updated successfully.", "success")
+        return redirect(url_for("budgets_page"))
 
-        return redirect(url_for("budgets"))
-
-    return render_template(
-        "edit_budget.html",
-        budget=budget
-    )
-
+    return render_template("edit_budget.html", budget=budget)
 
 @app.route(
     "/budgets/delete/<int:budget_id>",
