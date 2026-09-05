@@ -358,7 +358,7 @@ def edit_budget_page(budget_id):
             return redirect(url_for("edit_budget_page", budget_id=budget_id))
 
         flash("Budget updated successfully.", "success")
-        return redirect(url_for("budgets_page"))
+        return redirect(url_for("budgets"))
 
     return render_template("edit_budget.html", budget=budget)
 
